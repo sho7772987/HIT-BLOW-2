@@ -1,3 +1,6 @@
+//改良版
+//エントロピーを追加した
+//絵文字を入れた
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -32,7 +35,7 @@
   </style>
 </head>
 <body>
-  <h1>ヒット＆ブロー：期待値から次の推測を導く</h1>
+  <h1>Hit ＆ Blow：期待値から次の推測を導く</h1>
 
   <div>
     <label>予想した数字（例: 456）：</label>
@@ -42,6 +45,7 @@
     <label>Blow：</label>
     <input id="blow" type="number" min="0" max="3" />
     <button onclick="addResult()">入力</button>
+    <button onclick="resetGame()" style="margin-left: 1rem; background-color: #eee;">リセット</button>
   </div>
 
   <div class="result">
@@ -85,11 +89,11 @@
       const blow = parseInt(document.getElementById('blow').value);
 
       if (!/^\d{3}$/.test(guess) || new Set(guess).size !== 3) {
-        alert("3桁の異なる数字を入力してください（例: 123）");
+        alert("⚠️3桁の異なる数字を入力してください（例: 123）");
         return;
       }
       if (isNaN(hit) || isNaN(blow)) {
-        alert("HitとBlowは数値で入力してください");
+        alert("⚠️HitとBlowは数値で入力しましょう");
         return;
       }
 
@@ -110,12 +114,20 @@
       });
 
       let scores = filtered.map(n => {
-        let score = 0;
+        let outcomeMAP = new Map();
         for (let c of filtered) {
-          const r = judge(n, c);
-          score += r.hit * 3 + r.blow;
+          const { hit, blow } = judge(n,c);
+          const key = `${hit}-${blow}`;
+          outcomeMAP.set(key, (outcomeMAP.get(key) || 0) + 1);
         }
-        return { num: n, score };
+        let total = filtered.length;
+        //エントロピーをいかに追加
+        let entropy = 0;
+        for (let count of outcomeMAP.values()) {
+          let p = count / total;
+          entropy -= p * Math.log2(p);
+        }
+        return { num: n, score: entropy };
       });
 
       scores.sort((a, b) => b.score - a.score);
@@ -134,12 +146,12 @@
 
       if (filtered.length === 1) {
         const li = document.createElement("li");
-        li.textContent = `正解 が${filtered[0]} の可能性大(≖ᴗ≖ )`;
+        li.textContent = `正解 が${filtered[0]} の可能性大😎`;
         li.style.color = 'green';
         list.appendChild(li);
       } else if (filtered.length === 0) {
         const li = document.createElement("li");
-        li.textContent = `条件を満たす候補が存在しません。入力ミスの可能性があります。`;
+        li.textContent = `⚠️条件を満たす候補が存在しません。入力ミスの可能性があります。`;
         li.style.color = 'red';
         list.appendChild(li);
       }
@@ -153,6 +165,24 @@
         li.textContent = `推測: ${guess} → ${hit} Hit / ${blow} Blow`;
         list.appendChild(li);
       }
+    }
+
+    function resetGame() {
+      history = [];
+      updateCandidates();
+      updateHistory();
+
+      document.getElementById('guess').value = '';
+      document.getElementById('hit').value = '';
+      document.getElementById('blow').value = '';
+
+      const candidateList = document.getElementById("candidates");
+      candidateList.innerHTML = "";
+
+      const li = document.createElement("li");
+      li.textContent = "新しいゲームを開始しました";
+      li.style.color = "blue";
+      candidateList.appendChild(li);
     }
   </script>
 </body>
