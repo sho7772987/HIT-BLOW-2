@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <title>ヒット＆ブロー 期待値推測</title>
+  <meta charset="UTF-8">
+  <title>ヒット＆ブロー：期待値戦略</title>
   <style>
     body {
       font-family: sans-serif;
@@ -32,20 +32,20 @@
   </style>
 </head>
 <body>
-  <h1>ヒット＆ブロー：期待値から次の推測を導く</h1>
+  <h1>ヒット＆ブロー：期待値計算</h1>
 
   <div>
-    <label>予想した数字（例: 456）：</label>
-    <input id="guess" maxlength="3" />
+    <label>予想（例: 456）：</label>
+    <input id="guess" maxlength="3">
     <label>Hit：</label>
-    <input id="hit" type="number" min="0" max="3" />
+    <input id="hit" type="number" min="0" max="3">
     <label>Blow：</label>
-    <input id="blow" type="number" min="0" max="3" />
+    <input id="blow" type="number" min="0" max="3">
     <button onclick="addResult()">入力</button>
   </div>
 
   <div class="result">
-    <h2>次のおすすめ候補（期待値の高い順）</h2>
+    <h2>次のおすすめ推測（期待値が最小）</h2>
     <ul id="candidates"></ul>
   </div>
 
@@ -109,38 +109,49 @@
         });
       });
 
-      let scores = filtered.map(n => {
-        let score = 0;
-        for (let c of filtered) {
-          const r = judge(n, c);
-          score += r.hit * 3 + r.blow;
-        }
-        return { num: n, score };
-      });
-
-      scores.sort((a, b) => b.score - a.score);
       const list = document.getElementById("candidates");
       list.innerHTML = "";
 
-      const maxScore = scores.length > 0 ? scores[0].score : 1;
-
-      for (let i = 0; i < Math.min(10, scores.length); i++) {
-        const { num, score } = scores[i];
-        const percent = ((score / maxScore) * 100).toFixed(1);
+      if (filtered.length === 0) {
         const li = document.createElement("li");
-        li.textContent = `${num}（期待値: ${percent}%）`;
+        li.textContent = `候補が存在しません。入力ミスの可能性があります。`;
+        li.style.color = 'red';
         list.appendChild(li);
+        return;
       }
 
       if (filtered.length === 1) {
         const li = document.createElement("li");
-        li.textContent = `正解 が${filtered[0]} の可能性が高い！`;
+        li.textContent = `正解は ${filtered[0]} の可能性が非常に高い！`;
         li.style.color = 'green';
         list.appendChild(li);
-      } else if (filtered.length === 0) {
+        return;
+      }
+
+      const scores = allNumbers.map(guess => {
+        const patterns = new Map();
+
+        for (let answer of filtered) {
+          const { hit, blow } = judge(guess, answer);
+          const key = `${hit}-${blow}`;
+          patterns.set(key, (patterns.get(key) || 0) + 1);
+        }
+
+        let expectedRemaining = 0;
+        for (let count of patterns.values()) {
+          expectedRemaining += count * count;
+        }
+        expectedRemaining /= filtered.length;
+
+        return { guess, expectedRemaining };
+      });
+
+      scores.sort((a, b) => a.expectedRemaining - b.expectedRemaining);
+
+      for (let i = 0; i < Math.min(10, scores.length); i++) {
+        const { guess, expectedRemaining } = scores[i];
         const li = document.createElement("li");
-        li.textContent = `条件を満たす候補が存在しません。入力ミスの可能性があります。`;
-        li.style.color = 'red';
+        li.textContent = `${guess}（期待残数: ${expectedRemaining.toFixed(2)}）`;
         list.appendChild(li);
       }
     }
