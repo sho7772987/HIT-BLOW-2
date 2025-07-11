@@ -36,7 +36,7 @@
 
 ---
 
-#  HIT & BLOW (English Ver)
+#  HIT & BLOW (English ver)
 
 This is a web app designed to help you win the **"Hit & Blow"** (3-digit number guessing game).  
 It uses **entropy (information theory)** to recommend the most informative next guess.  
