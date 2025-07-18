@@ -61,19 +61,19 @@
 
     function generateCandidates() {
       let nums = [];
-      for (let i = 0; i < 1000; i++) {
+      for(let i = 0; i < 1000; i++) {
         const s = i.toString().padStart(3, '0');
-        if (new Set(s).size === 3) nums.push(s);
+        if(new Set(s).size === 3) nums.push(s);
       }
       return nums;
     }
 
     function judge(a, b) {
       let hit = 0, blow = 0;
-      for (let i = 0; i < 3; i++) {
-        if (a[i] === b[i]) {
+      for(let i = 0; i < 3; i++) {
+        if(a[i] === b[i]) {
           hit++;
-        } else if (b.includes(a[i])) {
+        }else if(b.includes(a[i])) {
           blow++;
         }
       }
@@ -85,11 +85,11 @@
       const hit = parseInt(document.getElementById('hit').value);
       const blow = parseInt(document.getElementById('blow').value);
 
-      if (!/^\d{3}$/.test(guess) || new Set(guess).size !== 3) {
+      if(!/^\d{3}$/.test(guess) || new Set(guess).size !== 3) {
         alert("⚠️3桁の異なる数字を入力してください（例: 123）");
         return;
       }
-      if (isNaN(hit) || isNaN(blow)) {
+      if(isNaN(hit) || isNaN(blow)) {
         alert("⚠️HitとBlowは数値で入力しましょう");
         return;
       }
@@ -112,7 +112,7 @@
 
       let scores = filtered.map(n => {
         let outcomeMAP = new Map();
-        for (let c of filtered) {
+        for(let c of filtered) {
           const { hit, blow } = judge(n,c);
           const key = `${hit}-${blow}`;
           outcomeMAP.set(key, (outcomeMAP.get(key) || 0) + 1);
@@ -120,7 +120,7 @@
         let total = filtered.length;
         //エントロピーをいかに追加
         let entropy = 0;
-        for (let count of outcomeMAP.values()) {
+        for(let count of outcomeMAP.values()) {
           let p = count / total;
           entropy -= p * Math.log2(p);
         }
@@ -133,7 +133,7 @@
 
       const maxScore = scores.length > 0 ? scores[0].score : 1;
 
-      for (let i = 0; i < Math.min(10, scores.length); i++) {
+      for(let i = 0; i < Math.min(10, scores.length); i++) {
         const { num, score } = scores[i];
         const percent = ((score / maxScore) * 100).toFixed(1);
         const li = document.createElement("li");
@@ -141,12 +141,12 @@
         list.appendChild(li);
       }
 
-      if (filtered.length === 1) {
+      if(filtered.length === 1) {
         const li = document.createElement("li");
         li.textContent = `正解 が${filtered[0]} の可能性大😎`;
         li.style.color = 'green';
         list.appendChild(li);
-      } else if (filtered.length === 0) {
+      }else if(filtered.length === 0) {
         const li = document.createElement("li");
         li.textContent = `⚠️条件を満たす候補が存在しません。入力ミスの可能性があります。`;
         li.style.color = 'red';
@@ -157,7 +157,7 @@
     function updateHistory() {
       const list = document.getElementById("history");
       list.innerHTML = "";
-      for (let { guess, hit, blow } of history) {
+      for(let { guess, hit, blow } of history) {
         const li = document.createElement("li");
         li.textContent = `推測: ${guess} → ${hit} Hit / ${blow} Blow`;
         list.appendChild(li);
